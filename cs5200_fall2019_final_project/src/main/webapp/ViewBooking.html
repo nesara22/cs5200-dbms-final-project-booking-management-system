@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Bookings</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div ng-app="BookingApp">
+    <div ng-controller="ViewBookingController" class="container viewBooking">
+        <div id="userDetailsDiv" ng-app="userDetailsApp" class="">
+            <div class="Prof_pic float-l">
+                <img id="profilePic" src="navyajpg.jpg">
+                <span class="Prof_edit"><i class=""></i></span>
+            </div>
+            <div class="user_dtl">
+                <span class="user_name"><i class="">Name : {{name}}</i></span>
+                <span class="user_name"><i class="">Email : {{email}}</i></span>
+                <span class="user_name"><i class="">Username : {{email}}</i></span>
+            </div>
+        </div>
+        <div>
+            <div class="lblHeading">
+                <h2> View your bookings: </h2>
+            </div>
+            <div class="items">
+                <div>
+                    <div ng-show="loader">
+                        <h1>Loading data. Please wait...</h1>
+                        <h2><img class="loader" src="/loader.gif"/></h2>
+                    </div>
+                    <div class="li-blk" ng-repeat="booking in bookings">
+                        <div class="li-dtls">
+                        <span class="li-name">
+                            <a href="">
+                            {{booking.roomDetails1.hotel.name}}
+                            </a>
+                        </span>
+                            <div class="li-desc1">Room : {{booking.roomDetails1.roomNumber}}
+                                ({{booking.roomDetails1.type}})
+                            </div>
+                            <div class="li-desc2">Number of beds : {{booking.roomDetails1.beds}}
+                            </div>
+                            <div class="li-desc3">Check in date:
+                                {{booking.roomDetails1.checkInDate}} - Check out
+                                date: {{booking.roomDetails1.checkOutDate}}
+                            </div>
+                            <div class="li-desc4">
+                                Address: {{booking.roomDetails1.hotel.street}},
+                                {{booking.roomDetails1.hotel.city}} -
+                                {{booking.roomDetails1.hotel.zip}}
+
+                            </div>
+                            <div class="li-desc5">Price: USD {{booking.roomDetails1.price}}
+                            </div>
+                            <span class="li-plc">
+                                            <span class="modified ng-binding">Refundable: {{booking.roomDetails1.refundable == true ? 'YES' : 'NO'}}</span>
+                                <span class="modified ng-binding">Complementary Breakfast: {{booking.roomDetails1.complementaryBreakfast == true ? 'YES' : 'NO'}}</span>
+                                <span class="modified ng-binding">Parking: {{booking.roomDetails1.parking == true ? 'YES' : 'NO'}}</span>
+                                        </span>
+                        </div>
+                        <div class="li-opts float-r">
+                            <!--<i title="Add reviews" class="far fa-comment-dots"></i>-->
+                            <!--<i title="Add to favorites" class="fas fa-heart"></i> -->
+                            <button class="btnBookRoom"
+                                    ng-click="cancelBooking(booking.roomDetails1.id, booking.id)">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    var app = angular.module("BookingApp", []);
+
+    //SITEURL = window.location.host;
+    app.controller("ViewBookingController", function ($scope, $http) {
+        var userID = getParameterByName("UserID");
+
+        //For user details
+        var userURL = "../api/customer/id/" + userID;
+        $http({
+                  async: false,
+                  method: 'GET',
+                  headers: {
+                      "Accept": "application/json;odata=verbose",
+                      "Access-Control-Allow-Origin": "*"
+                  },
+                  url: userURL
+              }).then(function (res) {
+            $scope.name = res.data.firstName + " " + res.data.lastName;
+            $scope.email = res.data.email;
+            $scope.username = res.data.username;
+        }, function (err) {
+            console.log("Error in getting user data :" + err.data)
+        })
+
+        //To see the bookings
+        $scope.loader = true;
+        var ajaxURL = "../api/bookings/customer/" + userID;
+        $http({
+                  async: false,
+                  method: 'GET',
+                  headers: {
+                      "Accept": "application/json;odata=verbose",
+                      "Access-Control-Allow-Origin": "*"
+                  },
+                  url: ajaxURL
+              }).then(function (res) {
+                          if (res.data != "") {
+                              $scope.bookings = res.data;
+                              $scope.loader = false;
+                          } else {
+                              alert("No bookings to show. ");
+                          }
+                      },
+                      function (err) {
+                          console.log("Error in getting bookings of customer : " + err.data);
+                      }
+        )
+
+        $scope.cancelBooking = function (roomID, bookingID) {
+
+            var deleteBookingURL = "../api/delete-booking/" + userID + "/" + bookingID;
+            $http({
+                      async: false,
+                      method: 'DELETE',
+                      headers: {
+                          "Accept": "application/json;odata=verbose",
+                          "Access-Control-Allow-Origin": "*"
+                      },
+                      url: deleteBookingURL
+                  }).then(function (res) {
+                //Update is booking of the room id
+                var updateIsBooking = "../api/update-room-booking/" + roomID + " /false";
+
+                $http({
+                          async: false,
+                          method: 'POST',
+                          headers: {
+                              "Accept": "application/json;odata=verbose",
+                              "Access-Control-Allow-Origin": "*"
+                          },
+                          url: updateIsBooking
+                      }).then(function () {
+                    alert("Booking has been successfully cancelled");
+                    window.location.reload();
+
+                }, function (err) {
+                    console.log("Error in updating is booking of room :" + err.data)
+                })
+
+            }, function (err) {
+                console.log("Error in deleting booking." + err.data);
+            })
+        }
+
+    })
+
+    function getParameterByName(name, url) {
+        if (!url) {
+            url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) {
+            return null;
+        }
+        if (!results[2]) {
+            return '';
+        }
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+</script>

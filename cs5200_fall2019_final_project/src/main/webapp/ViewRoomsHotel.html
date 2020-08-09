@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Rooms for the hotel: {{hotel.name}}</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+
+</head>
+<body>
+<div ng-app="BookingApp">
+    <div ng-controller="ViewRoomsForHotelController">
+        <div class="header">
+            BookAStay.com - Making your stay and search fun and easier!
+        </div>
+        <div id="userDetailsDiv" ng-app="userDetailsApp" class="">
+            <div class="Prof_pic float-l">
+                <img id="profilePic" src="navyajpg.jpg">
+                <span class="Prof_edit"><i class=""></i></span>
+            </div>
+            <div class="user_dtl">
+                <span class="user_name ng-binding">Role : {{role == null || role == '' ? 'NA' : role }}</span>
+            </div>
+        </div>
+        <div class="container">
+            <div class="legend">
+                <div class="legend-subDiv float-l">
+                    <i title="View rooms" class="fas fa-eye" ng-click="viewRooms(hotel.id)"></i>
+                    <span class="legendText">View bookings for the room</span>
+                </div>
+                <!--<div class="legend-subDiv float-l">
+                    <i title="Add rooms" class="fas fa-plus-square"
+                       ng-click="addRooms(hotel.id)"></i>
+                    <span class="legendText">Add rooms for a hotel</span>
+                </div>-->
+            </div>
+            <div>
+                <div class="items">
+                    <div>
+                        <h2 class="lblHeading">View rooms for hotel: </h2>
+                    </div>
+                    <div>
+                        <div ng-repeat="room in rooms" class="li-blk">
+                            <div class="li-dtls">
+                        <span class="li-name">
+                            <a href="">
+                            {{room.hotelName}} - Room Number : {{room.roomNumber}}
+                            </a>
+                        </span>
+                                <div class="li-desc1">Room type : {{room.type}}</div>
+                                <div class="li-desc2">Number of beds : {{room.beds}}</div>
+                                <div class="li-desc3">Check in date: {{room.checkInDate}}</div>
+                                <div class="li-desc4">Check out date: {{room.checkOutDate}}</div>
+                                <div class="li-desc5">Total price: USD {{room.price}}</div>
+                                <span class="li-plc">
+                                            <span class="modified ng-binding">Smoking : {{room.smoking == true ? 'YES' : 'NO'}}</span>
+                                            <span class="modified ng-binding">Complementary breakfast : {{room.complementaryBreakfast == true ? 'YES' : 'NO'}}</span>
+                                            <span class="modified ng-binding">Parking : {{room.parking == true ? 'YES' : 'NO'}}</span>
+                                            <span class="modified ng-binding">Is active : {{room.active == true ? 'YES' : 'NO'}}</span>
+                                        </span>
+                            </div>
+                            <div class="li-opts float-r">
+                                <i title="View bookings" class="fas fa-eye"
+                                   ng-click="viewBookings(room.id, room.roomNumber, room.hotelName)"></i>
+                                <button class="btnBookRoom activateBtn" ng-show="!room.booked"
+                                        ng-click="changeIsActive(room.id, room.active, room.hotelId)">
+                                    {{room.active == true ? 'Deactivate': 'Activate' }}
+                                </button>
+                                <!--<i title="Add to favorites" class="fas fa-heart"></i> -->
+                                <!--<i title="Add rooms" class="fas fa-plus-square"
+                                   ng-click="addRooms(hotel.id)"></i>-->
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            Copyright © 2019 BookAStay.com™. All rights reserved
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    var app = angular.module("BookingApp", []);
+
+    //SITEURL = window.location.host;
+    app.controller("ViewRoomsForHotelController", function ($scope, $http) {
+
+        var hotelID = getParameterByName("HotelID");
+        $scope.role = getParameterByName("Role")
+
+        var ajaxURL = "../api/hotel-rooms/hotel-id/" + hotelID;
+        $http({
+                  async: false,
+                  method: 'GET',
+                  headers: {
+                      "Accept": "application/json;odata=verbose",
+                      "Access-Control-Allow-Origin": "*"
+                  },
+                  url: ajaxURL
+              }).then(function (res) {
+                          if (res.data !== "") {
+
+                              $scope.rooms = res.data;
+                              for (var i = 0; i < $scope.rooms.length; i++) {
+                                  $scope.rooms[i].hotelName = res.data[i].hotel.name;
+                                  $scope.rooms[i].hotelId = res.data[i].hotel.id;
+                              }
+
+                          } else {
+                              alert("No rooms available");
+                          }
+                          console.log(res);
+                      }, function (err) {
+                          console.log(err);
+                      }
+        )
+
+        $scope.addRooms = function (hotelId) {
+            window.location.href = "/AddRoomVendor.html?HotelID=" + hotelId;
+        }
+
+        $scope.viewBookings = function (roomID, roomNumber, hotelName) {
+            window.location.href =
+                "/ViewBookingsForRoom.html?RoomID=" + roomID + "&RoomNumber=" + roomNumber
+                + "&HotelName=" + hotelName + "&Role=" + $scope.role;
+        }
+
+        $scope.changeIsActive = function (roomID, roomIsActive, hotelID) {
+            var updatedRoom = {};
+            for (var i = 0; i < $scope.rooms.length; i++) {
+                if ($scope.rooms[i].id == roomID) {
+                    updatedRoom = $scope.rooms[i];
+
+                }
+            }
+
+            updatedRoom.active = (roomIsActive == true ? false : true);
+            updatedRoom.hotel = {
+                "id" : hotelID
+            }
+
+            //Update the room
+            var ajaxURL = "../api/update-room/" + updatedRoom.id;
+            $http({
+                      async: false,
+                      method: 'PUT',
+                      headers: {"Accept": "application/json;odata=verbose"},
+                      contentType: "application/json; charset=utf-8",
+                      data: JSON.stringify(updatedRoom),
+                      url: ajaxURL
+                  }).then(function () {
+
+                alert("Room - is active status updated successfully.");
+                //Redirect user to view bookings page
+                window.location.reload();
+
+            }, function (error) {
+                console.log("Error in updating is booking column of room :" + error.data);
+            })
+
+        }
+
+    })
+
+    function getParameterByName(name, url) {
+        if (!url) {
+            url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) {
+            return null;
+        }
+        if (!results[2]) {
+            return '';
+        }
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
+</script>
+
+

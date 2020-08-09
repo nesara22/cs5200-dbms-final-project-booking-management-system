@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div ng-app="BookingApp">
+    <div ng-controller="LoginController" class="container">
+        <div class="header">
+            BookAStay.com - Making your stay and search fun and easier!
+        </div>
+        <div class="loginDiv">
+            <div>
+                <label>User name:</label>
+                <div>
+                    <input class="txt datePicker" ng-model="username" type="text"/>
+                </div>
+            </div>
+            <div>
+                <label>Password :</label>
+                <div>
+                    <input class="txt datePicker" id="password" ng-model="password"
+                           type="password"/>
+                    <input type="checkbox" ng-click="showPassword()">Show Password
+                </div>
+            </div>
+            <div>
+                <label>Role :</label>
+                <div>
+                    <select class="datePicker loginInp" ng-model="selectedRole">
+                        <option>Customer</option>
+                        <option>Vendor</option>
+                        <option>Admin</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button ng-click="loginUser()" class="btnBooking">Login</button>
+            </div>
+        </div>
+        <div class="footer">
+            Copyright © 2019 BookAStay.com™. All rights reserved
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    var app = angular.module("BookingApp", []);
+
+    SITEURL = window.location.host;
+    app.controller("LoginController", function ($scope, $http) {
+
+        $scope.loginUser = function () {
+
+            var ajaxURL = "/api/username/" + $scope.username;
+            $http({
+                      async: false,
+                      method: 'GET',
+                      headers: {
+                          "Accept": "application/json;odata=verbose",
+                          "Access-Control-Allow-Origin": "*"
+                      },
+                      url: ajaxURL
+                  }).then(function (res) {
+                if (res.data != "") {
+                    if ($scope.password != res.data.password) {
+                        alert("Wrong username and password!");
+                    } else if ($scope.password == res.data.password) {
+
+                        alert("Login successful. Please wait till redirected successfully.");
+
+                        if ($scope.selectedRole == "Customer") {
+                            window.location.href =
+                                "/Home.html?Role=Customer&UserID=" + res.data.id;
+                        } else if ($scope.selectedRole == "Vendor") {
+                            window.location.href =
+                                "/ViewHotelsVendor.html?Role=Vendor&UserID=" + res.data.id;
+                        } else if ($scope.selectedRole == "Admin") {
+                            window.location.href =
+                                "/ViewHotelsAdmin.html?Role=Admin&UserID=" + res.data.id;
+                        }
+                        // window.location.replace("Home.html");
+
+                    }
+                } else {
+                    alert("Wrong username and password!");
+                }
+                console.log(res);
+            }, function (err) {
+                console.log(err);
+            })
+        }
+
+        $scope.showPassword = function () {
+            var x = document.getElementById("password");
+            if (x.type === "password") {
+                x.type = "text";
+            } else {
+                x.type = "password";
+            }
+        }
+
+    })
+</script>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+    <script src="slippry.js"></script>
+    <link rel="stylesheet" href="slippry.css"/>
+</head>
+<body>
+<div ng-app="BookingApp">
+    <div ng-controller="HomeController">
+        <div class="header">
+            BookAStay.com - Making your stay and search fun and easier!
+        </div>
+        <div id="userDetailsDiv" ng-app="userDetailsApp" class="">
+            <div class="Prof_pic float-l">
+                <img id="profilePic" src="navyajpg.jpg">
+            </div>
+            <div class="user_dtl">
+                <span class="user_name"><i class="">Name : {{name}}</i></span>
+                <span class="user_name"><i class="">Email : {{email}}</i></span>
+                <span class="user_name"><i class="">Username : {{email}}</i></span>
+            </div>
+            <div class="float-r">
+                <button ng-click="viewMyBookings()">View my bookings</button>
+            </div>
+        </div>
+        <div class="container">
+            <div>
+                <div>
+                    <ul id="imageHotels">
+                        <li><img class="banner"  src="hotel1.jpg"/></li>
+                        <li><img class="banner" src="hotel2.jpg"/></li>
+                        <li><img class="banner" src="hotel3.jpg"/></li>
+                        <li><img class="banner" src="hotel4.jpg"/></li>
+                    </ul>
+                </div>
+                <div class="field">
+                    <label>From Date :</label>
+                    <div>
+                        <input id="fromDate" class="datePicker" type="text" value=""
+                               ng-model="fromDate"/>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>To Date :</label>
+                    <div>
+                        <input id="toDate" class="datePicker" type="text" value=""
+                               ng-model="toDate"/>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Location :</label>
+                    <select ng-model="selectedCity" class="dropDown">
+                        <option ng-repeat="city in cities" value="{{city.model}}">{{city.city}}
+                        </option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>No. of adults:</label>
+                    <select class="dropDown" ng-model="selectedNumberAdults">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <button class="btnBookRoom" ng-click="getHotels()" id="searchBtn">Search</button>
+                </div>
+                <div ng-show="loader">
+                    <h1>Loading data. Please wait...</h1>
+                    <h2 ><img class="loader" src="/loader.gif" /></h2>
+                </div>
+                <div class="items">
+                    <div>
+                        <h2 class="lblHeading">View hotels: </h2>
+                    </div>
+                    <div>
+                        <div ng-repeat="room in roomDetailsArr" class="li-blk">
+                            <div class="li-dtls">
+                        <span class="li-name" title="{{room.hotel.name}} - {{room.roomNumber}}">
+                            <a href="">
+                            {{room.hotel.name}} - {{room.hotel.description}}
+                            </a>
+
+                        </span>
+                                <div class="li-desc1">   (Room Number: {{room.roomNumber}}) , Room type : {{room.type}}</div>
+                                <div class="li-desc2">Number of beds : {{room.occupancy}}</div>
+                                <div class="li-desc3">Check in date: {{room.checkInDate}} - Check
+                                    out date: {{room.checkOutDate}}
+                                </div>
+                                <div class="li-desc4">Total price: USD {{room.price}}</div>
+                                <div class="li-desc5">
+                                    Complementary Breakfast: {{room.complementaryBreakfast == true ?
+                                    'YES': 'NO'}},
+                                    Parking: {{room.parking == true ? 'YES': 'NO'}},
+                                    Fitness Centre: {{room.hotel.fitnessCentre == true ? 'YES':
+                                    'NO'}}
+                                </div>
+                                <span class="li-plc">
+                                            <span class="modified ng-binding">Rating : {{room.hotel.rating == null ?  'NA' : room.hotel.rating }}</span>
+                                        </span>
+                            </div>
+                            <div class="li-opts float-r">
+                                <!--<i title="View reviews" class="fas fa-eye"></i> -->
+                                <!--<i title="Add to favorites" class="fas fa-heart"></i> -->
+                                <div>
+                                    <button ng-click="bookRoom(room.id, room.hotel.id)"
+                                            class="btnBookRoom">Book
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div ng-show="hotels.length == 0">No hotels to show.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            Copyright © 2019 BookAStay.com™. All rights reserved
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    var app = angular.module("BookingApp", []);
+
+    //SITEURL = window.location.host;
+    app.controller("HomeController", function ($scope, $http) {
+
+        var userID = getParameterByName("UserID");
+        $scope.userID = userID;
+
+        var userURL = "../api/customer/id/" + userID;
+        $http({
+                  async: false,
+                  method: 'GET',
+                  headers: {
+                      "Accept": "application/json;odata=verbose",
+                      "Access-Control-Allow-Origin": "*"
+                  },
+                  url: userURL
+              }).then(function(res) {
+                $scope.name = res.data.firstName + " " +res.data.lastName;
+                $scope.email = res.data.email;
+                $scope.username = res.data.username;
+        }, function(err) {
+            console.log("Error in getting user data :" + err.data)
+        })
+
+        $scope.cities = [
+            {model: "Boston", city: "Boston"},
+            {model: "NewYork", city: "New York"},
+            {model: "LasVegas", city: "Las Vegas"},
+            {model: "KansasCity", city: "Kansas City"},
+            {model: "LosAngeles", city: "Los Angeles"},
+            {model: "San Jose", city: "San Jose"},
+            {model: "Phoenix", city: "Phoenix"},
+            {model: "WashingtonDC", city: "Washington DC"}
+        ];
+
+        $(document).ready(function () {
+            $("#imageHotels").slippry();
+            $("#fromDate").datepicker({
+                                          dateFormat: 'yy-mm-dd'
+                                      });
+            $("#toDate").datepicker({
+                                        dateFormat: 'yy-mm-dd'
+                                    });
+        });
+
+        $scope.getHotels = function () {
+
+            $scope.loader = true;
+            //Validate all filters
+            var proceed = true;
+
+            if ($scope.fromDate == null || $scope.fromDate == undefined || $scope.fromDate == "") {
+                proceed = false;
+            }
+
+            if ($scope.toDate == null || $scope.toDate == undefined || $scope.toDate == "") {
+                proceed = false;
+            }
+
+            if ($scope.selectedNumberAdults == null || $scope.selectedNumberAdults == undefined
+                || $scope.selectedNumberAdults == "") {
+                proceed = false;
+            }
+
+            if ($scope.selectedCity == null || $scope.selectedCity == undefined
+                || $scope.selectedCity == "") {
+                proceed = false;
+            }
+
+            if (proceed == true) {
+                //alert("Click get hotels working");
+
+                var ajaxURL = "../api/room/availability/" + $scope.fromDate + "/"
+                              + $scope.toDate + "/" + $scope.selectedNumberAdults + "/"
+                              + $scope.selectedCity;
+                $http({
+                          async: false,
+                          method: 'GET',
+                          headers: {
+                              "Accept": "application/json;odata=verbose",
+                              "Access-Control-Allow-Origin": "*"
+                          },
+                          url: ajaxURL
+                      }).then(function (res) {
+                                  if (res.data != "") {
+                                      $scope.loader = true;
+                                      //$scope.roomDetailsArr = [];
+                                      //roomDetails = {};
+                                      //roomDetails = res.data[i];
+                                      //roomDetails.hotel = {};
+                                      //roomDetails.hotel = hotelRes;
+
+                                      //$scope.roomDetailsArr.push(roomDetails);
+                                      $scope.roomDetailsArr = res.data;
+                                      $scope.loader = false;
+                                  } else {
+                                      alert("No hotels available");
+                                      $scope.loader = false;
+                                      $scope.roomDetailsArr = [];
+                                      $scope.$apply();
+                                  }
+                                  console.log(res);
+                              },
+
+                              function (err) {
+                                  console.log(err.data);
+                              }
+                )
+            } else {
+                alert("Please select all filters before searching.");
+            }
+        }
+
+        $scope.bookRoom = function (roomID, hotelID) {
+
+            window.location.href =
+                "/BookRooms.html?UserID=" + userID + "&RoomID=" + roomID + "&NumberAdults="
+                + $scope.selectedNumberAdults + "&HotelID=" + hotelID
+            ;
+        }
+
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) {
+                return null;
+            }
+            if (!results[2]) {
+                return '';
+            }
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        $scope.viewMyBookings = function() {
+            window.location.href = "/ViewBooking.html?UserID=" + userID;
+        }
+    })
+
+</script>
+
+

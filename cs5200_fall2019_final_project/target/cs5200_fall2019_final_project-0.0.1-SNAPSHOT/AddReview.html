@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Review</title>
+    <meta charset="UTF-8">
+    <title>Book room</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+    <script src="jquery-rate-picker.js"></script>
+</head>
+<body>
+<div ng-app="BookingApp">
+    <div ng-controller="AddReviewController" class="container">
+        <div id="userDetailsDiv" ng-app="userDetailsApp" class="">
+            <div class="Prof_pic float-l">
+                <img id="profilePic" src="navyajpg.jpg">
+                <span class="Prof_edit"><i class=""></i></span>
+            </div>
+            <div class="user_dtl">
+                <span class="user_name ng-binding">Navya Krishna Reddy</span>
+                <span class="user_name ng-binding">223-445-6789</span>
+                <span class="user_name ng-binding">anb@gmail.com</span>
+            </div>
+        </div>
+        <div>
+            <h2 class="lblHeading">Add review :</h2>
+        </div>
+        <div class="bookingDetails float-l">
+            <div class="detailsBlock">
+                <label class="lblHeading">Hotel Name:</label>
+                <div class="hotelDetText">Hotel 1</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Room Type:</label>
+                <div class="hotelDetText">Beach facing</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">No. of beds</label>
+                <div class="hotelDetText">Queen bed</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Total price:</label>
+                <div class="hotelDetText">USD 3000</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Check in date</label>
+                <div class="hotelDetText">15 March 2020</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Check out date</label>
+                <div class="hotelDetText">20 March 2020</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Occupancy</label>
+                <div class="hotelDetText">5</div>
+            </div>
+        </div>
+        <div class="form">
+            <div class="formSec float-l">
+                <div>Add your review: </div>
+                <textarea class="txtArea"></textarea>
+            </div>
+            <div class="rating float-l">
+                <div>Add rating: </div>
+                <span id="addRating" data-stars="3"></span>
+            </div>
+        </div>
+        <div class="actionBooking">
+            <button class="btnBooking">Book</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    $(document).ready(function () {
+        $.ratePicker("#addRating", {
+            rate: function (stars) {
+                alert('Rate is ' + stars);
+            }
+        });
+    })
+</script>

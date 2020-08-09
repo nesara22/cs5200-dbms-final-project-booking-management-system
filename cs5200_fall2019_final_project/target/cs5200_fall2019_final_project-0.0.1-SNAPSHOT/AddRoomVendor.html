@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Rooms</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+    <script src="slippry.js"></script>
+    <link rel="stylesheet" href="slippry.css"/>
+</head>
+<body>
+<div ng-app="BookingApp">
+    <div ng-controller="ViewHotelsVendorController">
+        <div class="header">
+            BookAStay.com - Making your stay and search fun and easier!
+        </div>
+        <div id="userDetailsDiv" ng-app="userDetailsApp" class="">
+            <div class="Prof_pic float-l">
+                <img id="profilePic" src="navyajpg.jpg">
+                <span class="Prof_edit"><i class=""></i></span>
+            </div>
+            <div class="user_dtl">
+                <span>Role : {{role}}</span>
+            </div>
+        </div>
+        <div class="container">
+            <div>
+                <div class="items">
+                    <div>
+                        <h2 class="lblHeading">Add room for hotel: {{hotelName}}</h2>
+                    </div>
+                    <div>
+                        <div class="addVal">
+                            <label>Room Number:</label>
+                            <div><input class="datePicker addValInp" type="text" ng-model="roomNumber"/></div>
+                        </div>
+                        <div class="addVal">
+                            <label>Number of beds:</label>
+                            <div><input class="datePicker addValInp" type="text" ng-model="beds"/></div>
+                        </div>
+                        <div class="addVal">
+                            <label>Price of the room (USD):</label>
+                            <input class="datePicker addValInp" type="text" ng-model="price"/>
+                        </div>
+                        <div class="addVal">
+                            <label>Complementary breakfast:</label>
+                            <div>
+                                <select class="dropDown addValInp" ng-model="breakfast">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="addVal">
+                            <label>Check-in date:</label>
+                            <div><input id="checkInDate" class="datePicker addValInp" type="text" ng-model="checkInDate"/></div>
+                        </div>
+                        <div class="addVal">
+                            <label>Check-out date:</label>
+                            <div><input id="checkOutDate" class="datePicker addValInp" type="text" ng-model="checkOutDate"/></div>
+                        </div>
+
+                        <div class="addVal">
+                            <label>Is the booking refundable:</label>
+                            <div>
+                                <select class="dropDown addValInp" ng-model="refundable">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="addVal">
+                            <label>Occupancy:</label>
+                            <div>
+                                <select class="dropDown addValInp" ng-model="occupancy">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="addVal">
+                            <label>Parking:</label>
+                            <select class="dropDown addValInp" ng-model="parking">
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                        <div class="addVal">
+                            <label>Smoking:</label>
+                            <select class="dropDown addValInp" ng-model="smoking">
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                        <div class="addVal">
+                            <label>Room type:</label>
+                            <select class="dropDown addValInp" ng-model="roomType">
+                                <option value="AIR_CONDITIONED">Air-conditioned</option>
+                                <option value="NON_AIR_CONDITIONED">Non Air-conditioned</option>
+                                <option value="BEACH_FACING">Beach-facing</option>
+                                <option value="BALCONY_VIEW">Balcony view</option>
+                                <option value="VALLEY_FACING">Valley facing</option>
+                                <option value="DORM_SAME_GENDER">Dorm (Same gender)</option>
+                                <option value="DORM_MIX_GENDER">Beach (Mix gender)</option>
+                            </select>
+                        </div>
+                        <div class="addVal">
+                            <label>Room is active:</label>
+                            <select class="dropDown addValInp" ng-model="isActive">
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="btnDiv">
+                    <button class="btnBooking" ng-click="addRoom()">Add Room</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            Copyright © 2019 BookAStay.com™. All rights reserved
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    var app = angular.module("BookingApp", []);
+
+   // SITEURL = window.location.host;
+    app.controller("ViewHotelsVendorController", function ($scope, $http) {
+
+        $(document).ready(function () {
+            $("#checkInDate").datepicker();
+            $("#checkOutDate").datepicker();
+        });
+
+        var hotelID = getParameterByName("HotelID");
+        $scope.role = getParameterByName("Role");
+        var userID = getParameterByName("UserID");
+        $scope.hotelName = getParameterByName("HotelName");
+
+        $scope.addRoom = function (hotelId) {
+            var roomObject = {
+                "roomNumber": $scope.roomNumber,
+                "beds": $scope.beds,
+                "type": $scope.roomType,
+                "price": $scope.price,
+                "smoking": $scope.smoking,
+                "complementaryBreakfast": $scope.breakfast,
+                "parking": $scope.parking,
+                "checkInDate": $scope.checkInDate,
+                "checkOutDate": $scope.checkOutDate,
+                "occupancy":$scope.occupancy ,
+                "booked": false,
+                "refundable": $scope.refundable,
+                "active" : $scope.isActive,
+                "hotel": {
+                    id: hotelID
+                }
+            }
+
+            var ajaxURL =   "../api/room";
+            $http({
+                      async: false,
+                      method: 'POST',
+                      headers: { "Accept": "application/json;odata=verbose" },
+                      contentType: "application/json; charset=utf-8",
+                      data: JSON.stringify(roomObject),
+                      url: ajaxURL
+                  }).then(function() {
+                      alert("Room has been added successfully.");
+
+                      if ($scope.role == "Vendor") {
+                          window.location.href = "/ViewHotelsVendor.html?UserID=" + userID;
+                      }
+                      else if ($scope.role == "Admin")
+                      {
+                          window.location.href = "/ViewHotelsAdmin.html";
+                      }
+            }, function(error){
+                      console.log("Error in adding room :" + error);
+            })
+
+        }
+
+    })
+
+
+    function getParameterByName(name, url) {
+        if (!url) {
+            url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) {
+            return null;
+        }
+        if (!results[2]) {
+            return '';
+        }
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
+</script>
+
+

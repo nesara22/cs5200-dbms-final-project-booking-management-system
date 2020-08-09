@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Hotels</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+    <script src="slippry.js"></script>
+    <link rel="stylesheet" href="slippry.css"/>
+</head>
+<body>
+<div ng-app="BookingApp">
+    <div ng-controller="AddHotelsAdminController">
+        <div class="header">
+            BookAStay.com - Making your stay and search fun and easier!
+        </div>
+        <div id="userDetailsDiv" ng-app="userDetailsApp" class="">
+            <div class="Prof_pic float-l">
+                <img id="profilePic" src="navyajpg.jpg">
+                <span class="Prof_edit"><i class=""></i></span>
+            </div>
+            <div class="user_dtl">
+                <span class="user_name ng-binding">ROLE : ADMIN</span>
+            </div>
+        </div>
+        <div class="container">
+            <div>
+                <div class="items">
+                    <div>
+                        <h2 class="lblHeading">Add hotel</h2>
+                    </div>
+                    <div>
+                        <div class="addVal">
+                            <label>Name of the hotel:</label>
+                            <div><input class="datePicker addValInp" type="text" maxlength="40"
+                                        ng-model="hotelName"/></div>
+                        </div>
+                        <div class="addVal">
+                            <label>Description:</label>
+                            <input class="datePicker addValInp" maxlength="50" type="text"
+                                   ng-model="description"/>
+                        </div>
+                        <div class="addVal">
+                            <label>Street/Address:</label>
+                            <div>
+                                <input class="datePicker addValInp" type="text" ng-model="street">
+                            </div>
+                        </div>
+                        <div class="addVal">
+                            <label>Zip:</label>
+                            <div>
+                                <input class="datePicker addValInp" type="text" ng-model="zip">
+                            </div>
+                        </div>
+                        <div class="addVal">
+                            <label>City:</label>
+                            <select ng-model="selectedCity" class="dropDown addValInp">
+                                <option ng-repeat="city in cities" value="{{city.model}}">
+                                    {{city.city}}
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                        </div>
+                        <div class="addVal">
+                            <label>Fitness centre available:</label>
+                            <div>
+                                <select class="dropDown addValInp" ng-model="fitnessCentre">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="addVal">
+                            <label>Swimming pool available:</label>
+                            <div>
+                                <select class="dropDown addValInp" ng-model="swimmingPool">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="addVal">
+                            <label>Payment method:</label>
+                            <select class="dropDown addValInp" ng-model="paymentMethod">
+                                <option value="CASH">Cash</option>
+                                <option value="CREDIT_CARD">Credit Card</option>
+                                <option value="DEBIT_CARD">Debit Card</option>
+                            </select>
+                        </div>
+                        <div class="addVal">
+                            <label>Phone numbers: </label>
+                            <input class="datePicker addValInp" type="text" ng-model="phone">
+                        </div>
+                        <div class="addVal">
+                            <label>Vendors: </label>
+                            <select class="dropDown addValInp" ng-model="vendor">
+                                <option value="{{vendor.id}}" ng-repeat="vendor in vendors">{{vendor.firstName}} {{vendor.lastName}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btnDiv">
+                <button class="btnBooking" ng-click="addHotel()">Add Hotel</button>
+            </div>
+        </div>
+        <div class="footer">
+            Copyright © 2019 BookAStay.com™. All rights reserved
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    var app = angular.module("BookingApp", []);
+
+   // SITEURL = window.location.host;
+    app.controller("AddHotelsAdminController", function ($scope, $http) {
+
+        $(document).ready(function () {
+            $("#checkInDate").datepicker();
+            $("#checkOutDate").datepicker();
+        });
+
+        $scope.cities = [
+            {model: "Boston", city: "Boston"},
+            {model: "NewYork", city: "New York"},
+            {model: "LasVegas", city: "Las Vegas"},
+            {model: "KansasCity", city: "Kansas City"},
+            {model: "LosAngeles", city: "Los Angeles"},
+            {model: "San Jose", city: "San Jose"},
+            {model: "Phoenix", city: "Phoenix"},
+            {model: "WashingtonDC", city: "Washington DC"}
+        ];
+
+
+        var getVendor = "../api/vendors"
+            $http({
+                      async: false,
+                      method: 'GET',
+                      headers: {"Accept": "application/json;odata=verbose"},
+                      contentType: "application/json; charset=utf-8",
+                      url: getVendor
+                  }).then(function(res) {
+                      if (res.data != "") {
+                          $scope.vendors = res.data;
+                      }
+                      else {
+                         $scope.vendors ={};
+                         alert("Error is showing vendors. Contact system admin.");
+                }
+            }, function() {
+
+            })
+
+        $scope.addHotel = function (hotelId) {
+            var hotelObject = {
+                "name": $scope.hotelName,
+                "description": $scope.description,
+                "swimmingPoolAvailability": $scope.swimmingPool,
+                "fitnessCentre": $scope.fitnessCentre,
+                "city": $scope.selectedCity,
+                "street": $scope.street,
+                "zip": $scope.zip,
+                "paymentMethod": $scope.paymentMethod,
+                "phones": [
+                    {
+                        "number": $scope.phone,
+                        "isPrimary": true
+                    }
+                ],
+                "vendor" : {
+                    "id" : $scope.vendor
+                }
+            }
+
+            var ajaxURL = "../api/hotel";
+            $http({
+                      async: false,
+                      method: 'POST',
+                      headers: {"Accept": "application/json;odata=verbose"},
+                      contentType: "application/json; charset=utf-8",
+                      data: JSON.stringify(hotelObject),
+                      url: ajaxURL
+                  }).then(function () {
+                alert("Hotel added successfully.");
+                window.location.href = "/ViewHotelsAdmin.html";
+            }, function (error) {
+                console.log("Error in adding hotel :" + error.data);
+            })
+
+        }
+
+    })
+
+    function getParameterByName(name, url) {
+        if (!url) {
+            url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) {
+            return null;
+        }
+        if (!results[2]) {
+            return '';
+        }
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
+</script>
+
+

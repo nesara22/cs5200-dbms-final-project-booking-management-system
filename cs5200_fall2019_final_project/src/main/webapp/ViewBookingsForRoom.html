@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Bookings</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+    <script src="slippry.js"></script>
+    <link rel="stylesheet" href="slippry.css"/>
+</head>
+<body>
+<div ng-app="BookingApp">
+    <div ng-controller="ViewBookingsRoomController">
+        <div class="header">
+            BookAStay.com - Making your stay and search fun and easier!
+        </div>
+        <div id="userDetailsDiv" ng-app="userDetailsApp" class="">
+            <div class="Prof_pic float-l">
+                <img id="profilePic" src="navyajpg.jpg">
+                <span class="Prof_edit"><i class=""></i></span>
+            </div>
+            <div class="user_dtl">
+                <span class="user_name ng-binding">Role : {{role == null || role == '' ? 'NA' : role }}</span>
+            </div>
+        </div>
+        <div class="container">
+            <!--<div class="legend">
+                <div class="legend-subDiv float-l">
+                    <i title="View rooms" class="fas fa-eye" ></i>
+                    <span class="legendText">View rooms for a hotel</span>
+                </div>
+                <div class="legend-subDiv float-l">
+                    <i title="Add rooms" class="fas fa-plus-square"></i>
+                    <span class="legendText">Add rooms for a hotel</span>
+                </div>
+            </div>-->
+            <div>
+                <div class="items">
+                    <div>
+                        <h2>Hotel : {{hotelName}} </h2>
+                        <h2 class="lblHeading">View bookings for Room Number: {{roomNumber}} </h2>
+                    </div>
+                    <div>
+                        <div ng-repeat="booking in bookings" class="li-blk">
+                            <div class="li-dtls">
+                        <span class="li-name">
+                            <a href="">
+                                Booked By:
+                                    <span>{{booking.customer.firstName}}  {{booking.customer.lastName}} </span>
+                            </a>
+                        </span>
+                                <div class="li-desc3">
+                                    Customer details:
+                                    <span>Email: {{booking.customer.email}} ,</span>
+                                    <span>Phone: {{booking.customer.phone}}</span>
+                                </div>
+                                <div class="li-desc5">Check-in date: {{booking.checkInDate}}</div>
+                                <div class="li-desc1">Check out date: {{booking.checkOutDate}}
+                                </div>
+                                <div class="li-desc4">Number of adults : {{booking.numberOfAdults}}
+                                </div>
+                                <div class="li-desc5">Room type: {{booking.roomDetails1.type}}
+                                </div>
+                                <span class="li-plc">
+                                    <span class="modified ng-binding">
+                                        <span>Refundable : {{booking.roomDetails1.refundable == true ? 'YES' : 'NO'}} ,</span>
+                                        <span>Complementary Breakfast : {{booking.roomDetails1.complementaryBreakfast == true ? 'YES' : 'NO'}} ,</span>
+                                        <span>Parking : {{booking.roomDetails1.parking == true ? 'YES' : 'NO'}} , </span>
+                                        <span>Smoking : {{booking.roomDetails1.smoking == true ? 'YES' : 'NO'}}</span>
+                                    </span>
+                                </span>
+                            </div>
+                            <!--<div class="li-opts float-r">
+                                <i title="View rooms" class="fas fa-eye"
+                                   ng-click="viewRooms(hotel.id)"></i>
+                                &lt;!&ndash;<i title="Add to favorites" class="fas fa-heart"></i> &ndash;&gt;
+                                <i title="Add rooms" class="fas fa-plus-square"
+                                   ng-click="addRooms(hotel.id)"></i>
+                            </div>-->
+
+                        </div>
+                        <div ng-show="bookings.length == 0">No bookings available.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            Copyright © 2019 BookAStay.com™. All rights reserved
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    var app = angular.module("BookingApp", []);
+
+   // SITEURL = window.location.host;
+    app.controller("ViewBookingsRoomController", function ($scope, $http) {
+
+        var roomID = getParameterByName("RoomID");
+        $scope.roomNumber = getParameterByName("RoomNumber");
+        $scope.hotelName = getParameterByName("HotelName");
+        $scope.role = getParameterByName("Role");
+
+        var ajaxURL =  "../api/room/id/" + roomID;
+        $http({
+                  async: false,
+                  method: 'GET',
+                  headers: {
+                      "Accept": "application/json;odata=verbose",
+                      "Access-Control-Allow-Origin": "*"
+                  },
+                  url: ajaxURL
+              }).then(function (res) {
+                          if (res.data !== "") {
+                              $scope.bookings = res.data.bookingDetails;
+                          } else {
+                              alert("No bookings available");
+                          }
+                          console.log(res);
+                      }, function (err) {
+                          console.log(err);
+                      }
+        )
+
+        $scope.viewRooms = function (hotelId) {
+            window.location.href = "/ViewRoomsHotel.html?HotelID=" + hotelId;
+        }
+
+        $scope.addRooms = function (hotelId) {
+            window.location.href = "/AddRoomVendor.html?HotelID=" + hotelId;
+        }
+
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) {
+                return null;
+            }
+            if (!results[2]) {
+                return '';
+            }
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+    })
+
+</script>
+
+

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book room</title>
+    <script src="jquery.min.js"></script>
+    <script src="angular.min.js"></script>
+    <script src="jquery-ui.js"></script>
+    <link href="index.css" rel="stylesheet"/>
+    <link href="jquery-ui.css" rel="stylesheet"/>
+    <link href="bootstrap.min.css" rel="stylesheet"/>
+    <script src="home.js"></script>
+    <script src="https://kit.fontawesome.com/0337cb746d.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div ng-app="BookingApp" ng-cloak>
+    <div ng-controller="BookRoomsController" class="container">
+        <div id="userDetailsDiv" ng-app="userDetailsApp" class="">
+            <div class="Prof_pic float-l">
+                <img id="profilePic" src="navyajpg.jpg">
+                <span class="Prof_edit"><i class=""></i></span>
+            </div>
+            <div class="user_dtl">
+                <span class="user_name"><i class="">Name : {{name}}</i></span>
+                <span class="user_name"><i class="">Email : {{email}}</i></span>
+                <span class="user_name"><i class="">Username : {{email}}</i></span>
+            </div>
+        </div>
+        <div class="bookingDetails float-l">
+            <div class="detailsBlock">
+                <label class="lblHeading">Hotel Name:</label>
+                <div class="hotelDetText">{{roomDetails.hotel.name}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Room Number:</label>
+                <div class="hotelDetText">{{roomDetails.roomNumber}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Room Type:</label>
+                <div class="hotelDetText">{{roomDetails.type}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">No. of beds</label>
+                <div class="hotelDetText">{{roomDetails.beds}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Total price:</label>
+                <div class="hotelDetText">USD {{roomDetails.price}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Check in date (MM/DD/YY)</label>
+                <div class="hotelDetText">{{roomDetails.checkInDate}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Check out date (MM/DD/YY)</label>
+                <div class="hotelDetText">{{roomDetails.checkOutDate}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Occupancy</label>
+                <div class="hotelDetText">{{roomDetails.occupancy}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Smoking allowed</label>
+                <div class="hotelDetText">{{roomDetails.smoking == true ? "YES" : "NO"}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Parking available</label>
+                <div class="hotelDetText">{{roomDetails.parking == true ? "YES" : "NO"}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Refundable</label>
+                <div class="hotelDetText">{{roomDetails.refundable == true ? "YES" : "NO"}}</div>
+            </div>
+            <div class="detailsBlock">
+                <label class="lblHeading">Complimentary breakfast</label>
+                <div class="hotelDetText">{{roomDetails.complimentaryBreakfast == true ? "YES" : "NO"}}</div>
+            </div>
+        </div>
+        <div ng-show="loader">
+            <h1>Loading data. Please wait...</h1>
+            <h2 ><img class="loader" src="/loader.gif" /></h2>
+        </div>
+
+        <div class="actionBooking">
+            <button ng-click="bookRoom()" class="btnBooking">Book</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    var app = angular.module("BookingApp", []);
+
+    //SITEURL = window.location.host;
+    app.controller("BookRoomsController", function ($scope, $http) {
+
+        var userID = getParameterByName("UserID");
+        var roomID = getParameterByName("RoomID");
+        var numberAdults = getParameterByName("NumberAdults");
+        var hotelID = getParameterByName("HotelID");
+
+        if (userID != null && roomID != null) {
+
+            var userURL = "../api/customer/id/" + userID;
+            $http({
+                      async: false,
+                      method: 'GET',
+                      headers: {
+                          "Accept": "application/json;odata=verbose",
+                          "Access-Control-Allow-Origin": "*"
+                      },
+                      url: userURL
+                  }).then(function(res) {
+                $scope.name = res.data.firstName + " " +res.data.lastName;
+                $scope.email = res.data.email;
+                $scope.username = res.data.username;
+            }, function(err) {
+                console.log("Error in getting user data :" + err.data)
+            })
+
+            getRoomDetails();
+        } else {
+            alert("Room details not available!! ");
+        }
+
+        //Get the room details
+        function getRoomDetails() {
+            //alert("Click get hotels working");
+
+            var ajaxURL = "../api/room/id/" + roomID;
+            $http({
+                      async: false,
+                      method: 'GET',
+                      headers: {
+                          "Accept": "application/json;odata=verbose",
+                          "Access-Control-Allow-Origin": "*"
+                      },
+                      url: ajaxURL
+                  }).then(function (res) {
+                if (res.data != "") {
+                        $scope.roomDetails = res.data;
+                } else {
+                    alert("Room not available.");
+                    window.location.href="/Home.html";
+                }
+
+            }, function (err) {
+                alert("Error in getting room");
+                console.log(err + "Error in getting room");
+            })
+        }
+
+        $scope.bookRoom = function () {
+            $scope.loader = true;
+            var ajaxURL = "../api/booking/";
+
+            var bookingObject = {
+                checkInDate: $scope.roomDetails.checkInDate,
+                checkOutDate: $scope.roomDetails.checkOutDate,
+                numberOfAdults: numberAdults,
+                roomDetails1: {
+                    id: roomID
+                },
+                customer: {
+                    id: userID
+                }
+            }
+
+            $http({
+                      async: false,
+                      method: 'POST',
+                      headers: {"Accept": "application/json;odata=verbose"},
+                      contentType: "application/json; charset=utf-8",
+                      data: JSON.stringify(bookingObject),
+                      url: ajaxURL
+                  }).then(function () {
+
+                //Update the is booking of the room
+                updateIsBookingOfRoom();
+
+                //Redirect user to view bookings page
+                //window.location.href = "../src/ViewBooking.html?UserID=" + userID;
+
+            }, function (error) {
+                console.log("Error in adding room :" + error);
+            })
+        }
+
+        function updateIsBookingOfRoom() {
+            var newRoomDetails = $scope.roomDetails;
+            newRoomDetails.hotel = {
+                "id" : hotelID
+            }
+            newRoomDetails.booked = true;
+
+            var ajaxURL = "../api/update-room/" + newRoomDetails.id;
+            $http({
+                      async: false,
+                      method: 'PUT',
+                      headers: {"Accept": "application/json;odata=verbose"},
+                      contentType: "application/json; charset=utf-8",
+                      data: JSON.stringify(newRoomDetails),
+                      url: ajaxURL
+                  }).then(function () {
+
+                alert("Booking is successful.");
+                //Redirect user to view bookings page
+                window.location.href = "/ViewBooking.html?UserID=" + userID;
+
+            }, function (error) {
+                console.log("Error in updating is booking column of room :" + error.data);
+            })
+
+        }
+
+    });
+
+    function getParameterByName(name, url) {
+        if (!url) {
+            url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) {
+            return null;
+        }
+        if (!results[2]) {
+            return '';
+        }
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+</script>
